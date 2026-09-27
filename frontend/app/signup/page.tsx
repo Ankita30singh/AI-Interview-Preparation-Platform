@@ -1,121 +1,125 @@
-export default function SignupPage() {
-  return (
-    <main className="min-h-[calc(100vh-73px)] flex items-center justify-center px-6 py-12">
-      <div className="w-full max-w-md">
+"use client";
 
-        {/* Signup Header */}
-        <div className="text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-white text-xl font-bold">
-            P
+import { FormEvent, useState } from "react";
+
+export default function SignupPage() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSignup(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    setMessage("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.detail || "Signup failed");
+        return;
+      }
+
+      setMessage(data.message);
+      
+      setName("");
+      setEmail("");
+      setPassword("");
+    } catch (error) {
+      console.error(error);
+      setMessage("Unable to connect to the backend.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main className="min-h-screen flex items-center justify-center">
+      <div className="w-full max-w-md p-8 border rounded-2xl shadow-sm">
+        <h1 className="text-3xl font-bold text-center">
+          Create Account
+        </h1>
+
+        <p className="mt-2 text-center text-gray-600">
+          Start your interview preparation with PrepAI
+        </p>
+
+        <form onSubmit={handleSignup} className="mt-8 space-y-4">
+          <div>
+            <label className="block mb-2 font-medium">
+              Name
+            </label>
+
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              required
+              className="w-full px-4 py-3 border rounded-lg"
+            />
           </div>
 
-          <h1 className="mt-6 text-3xl font-bold tracking-tight">
-            Create your account
-          </h1>
+          <div>
+            <label className="block mb-2 font-medium">
+              Email
+            </label>
 
-          <p className="mt-2 text-gray-600">
-            Start your personalized interview preparation journey.
-          </p>
-        </div>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              required
+              className="w-full px-4 py-3 border rounded-lg"
+            />
+          </div>
 
-        {/* Signup Card */}
-        <div className="mt-8 rounded-2xl border bg-white p-8 shadow-sm">
+          <div>
+            <label className="block mb-2 font-medium">
+              Password
+            </label>
 
-          <form className="space-y-5">
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              required
+              className="w-full px-4 py-3 border rounded-lg"
+            />
+          </div>
 
-            {/* Name */}
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium mb-2"
-              >
-                Full name
-              </label>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 rounded-lg bg-black text-white disabled:opacity-50"
+          >
+            {loading ? "Creating Account..." : "Sign Up"}
+          </button>
 
-              <input
-                id="name"
-                type="text"
-                placeholder="Enter your full name"
-                className="w-full rounded-lg border px-4 py-3 outline-none transition focus:ring-2 focus:ring-black"
-              />
-            </div>
-
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium mb-2"
-              >
-                Email address
-              </label>
-
-              <input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                className="w-full rounded-lg border px-4 py-3 outline-none transition focus:ring-2 focus:ring-black"
-              />
-            </div>
-
-            {/* Password */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium mb-2"
-              >
-                Password
-              </label>
-
-              <input
-                id="password"
-                type="password"
-                placeholder="Create a password"
-                className="w-full rounded-lg border px-4 py-3 outline-none transition focus:ring-2 focus:ring-black"
-              />
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium mb-2"
-              >
-                Confirm password
-              </label>
-
-              <input
-                id="confirmPassword"
-                type="password"
-                placeholder="Confirm your password"
-                className="w-full rounded-lg border px-4 py-3 outline-none transition focus:ring-2 focus:ring-black"
-              />
-            </div>
-
-            {/* Signup Button */}
-            <button
-              type="submit"
-              className="w-full rounded-lg bg-black py-3 font-medium text-white transition hover:bg-gray-800"
-            >
-              Create account
-            </button>
-
-          </form>
-
-          {/* Login Link */}
-          <p className="mt-6 text-center text-sm text-gray-600">
-            Already have an account?{" "}
-            <a
-              href="/login"
-              className="font-semibold text-black hover:underline"
-            >
-              Sign in
-            </a>
-          </p>
-        </div>
-
-        <p className="mt-6 text-center text-xs text-gray-500">
-          Your information is securely protected.
-        </p>
+          {message && (
+            <p className="text-center text-sm text-gray-700">
+              {message}
+            </p>
+          )}
+        </form>
       </div>
     </main>
   );
